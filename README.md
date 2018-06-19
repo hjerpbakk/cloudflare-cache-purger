@@ -31,7 +31,9 @@ Caution, do not run scripts from the Internet that you do not fully understand.
 
 If the script cannot find `config.json`, the generated paths will only be written to standard out. The default site is `https://hjerpbakk.com`, but this can easily be changed to your domain within the script.
 
-<img src="example-run.png" width="682" alt="Example from a local dry run]" />
+<p align="center">
+    <img src="example-run.png" width="682" alt="Example from a local dry run]" />
+</p>
 
 ## Clear Cloudflare cache
 
