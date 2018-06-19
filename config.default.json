@@ -1,0 +1,6 @@
+{
+    "baseAddress": "[baseAdress]",
+    "cloudflareApiKey": "[cloudflareApiKey]",
+    "cloudflareEmail": "[cloudflareEmail]",
+    "cloudflareZoneId": "[cloudflareZoneId]"
+}
