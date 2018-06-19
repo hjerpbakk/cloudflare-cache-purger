@@ -12,7 +12,7 @@ if (Args.Count != 1) {
     return;
 }
 
-Console.WriteLine("Finding cached URLs to clear...");
+Console.WriteLine("Finding cached URLs...");
 var postPath = Path.GetFullPath(Path.Combine(Args[0], "_posts"));
 var latestPostPath = Directory.EnumerateFileSystemEntries(postPath).OrderByDescending(p => p).FirstOrDefault();
 if (latestPostPath == null) {
@@ -47,6 +47,7 @@ Console.WriteLine(string.Join(Environment.NewLine, urls));
 if (string.IsNullOrEmpty(config.CloudflareApiKey) 
     || string.IsNullOrEmpty(config.CloudflareEmail)
     || string.IsNullOrEmpty(config.CloudflareZoneId)) {
+    Console.WriteLine("Add config.json if you want to automatically clear the Cloudflare cache");
     return;
 }
 
