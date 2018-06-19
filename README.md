@@ -32,7 +32,7 @@ Caution, do not run scripts from the Internet that you do not fully understand.
 If the script cannot find `config.json`, the generated paths will only be written to standard out. The default site is `https://hjerpbakk.com`, but this can easily be changed to your domain within the script.
 
 <p align="center">
-    <img src="example-run.png" width="682" alt="Example from a local dry run]" />
+    <img src="dry-run.png" width="682" alt="Example from a local dry run" />
 </p>
 
 ## Clear Cloudflare cache
@@ -40,3 +40,7 @@ If the script cannot find `config.json`, the generated paths will only be writte
 To use this with Cloudflare, clone the repo, create `config.json` from `config.default.json` and input your configuration values.
 
 Running the script now will call the Cloudflare API and do the needful.
+
+<p align="center">
+    <img src="cloudflare-clear.png" width="682" alt="Example clearing the Cloudflare cache" />
+</p>
