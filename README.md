@@ -33,10 +33,10 @@ If a `config.json` file is added to the same directory, the script will try to a
 
 ```JSON
 {
-	"baseAddress": "[baseAdress]",
-	"cloudflareApiKey": "[cloudflareApiKey]",
-	"cloudflareEmail": "[cloudflareEmail]",
-	"cloudflareZoneId": "[cloudflareZoneId]"
+   "baseAddress": "[baseAdress]",
+   "cloudflareApiKey": "[cloudflareApiKey]",
+   "cloudflareEmail": "[cloudflareEmail]",
+   "cloudflareZoneId": "[cloudflareZoneId]"
 }
 ```
 
