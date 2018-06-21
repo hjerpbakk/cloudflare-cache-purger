@@ -36,7 +36,7 @@ var urls = new List<string>() {
     config.BaseAddress, 
     GetUrl("feed.xml"), 
     GetUrl("sitemap.xml"), 
-    GetUrl("archive"), 
+    GetUrl("archive/"), 
     GetPostUrl(latestPostPath) 
     };
 urls.AddRange(preamble.tags.Select(t => GetTagUrl(t)));
@@ -51,10 +51,11 @@ if (string.IsNullOrEmpty(config.CloudflareApiKey)
     return;
 }
 
-await ClearCloudflareCache(urls);
+await ClearCloudflareCache();
+await WarmupCache();
 
 string GetUrl(string webPath) => config.BaseAddress + "/" + webPath;
-string GetTagUrl(string tag) => GetUrl("tag/" + tag);
+string GetTagUrl(string tag) => GetUrl("tag/" + tag + "/");
 
 string GetPostUrl(string latestPostPath) {
     var postFileName = Path.GetFileNameWithoutExtension(latestPostPath);
@@ -100,7 +101,7 @@ Preamble ParsePreamble(string preambleText) {
     return deserializer.Deserialize<Preamble>(preambleText);
 }
 
-async Task ClearCloudflareCache(List<string> urls) {
+async Task ClearCloudflareCache() {
     Console.WriteLine("Clearing Cloudflare cache...");
     var cloudflareContent = new CloudflareContent(urls);
     var cloudflareContentString = JsonConvert.SerializeObject(cloudflareContent);
@@ -124,6 +125,28 @@ async Task ClearCloudflareCache(List<string> urls) {
 string FormatJson(string json) {
     dynamic parsedJson = JsonConvert.DeserializeObject(json);
     return JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
+}
+
+async Task WarmupCache() {
+    Console.WriteLine("Warming cache...");
+    foreach (var url in urls) {
+        await VerifyUrl(url);
+    }  
+
+    Console.WriteLine("All URLs hit successfully");
+}
+
+async Task VerifyUrl(string url) {
+    try {
+        using (var httpClient = new HttpClient()) {
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            var response = await httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+        }
+    } catch (System.Exception) {
+        Console.WriteLine("Failed to hit " + url);
+        throw;
+    }
 }
 
 struct Preamble {
