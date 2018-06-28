@@ -129,6 +129,7 @@ string FormatJson(string json) {
 
 async Task WarmupCache() {
     Console.WriteLine("Warming cache...");
+    await Task.Delay(TimeSpan.FromSeconds(30));
     foreach (var url in urls) {
         await VerifyUrl(url);
     }  
