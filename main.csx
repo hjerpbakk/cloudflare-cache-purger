@@ -37,10 +37,11 @@ var config = File.Exists(ConfigFileName)
     : new Config() { BaseAddress = "https://hjerpbakk.com" };
 
 var preamble = ParsePreamble(postPreamble);
+var sitemapUrl = GetUrl("sitemap.xml");
 var urls = new List<string>() { 
     config.BaseAddress, 
     GetUrl("feed.xml"), 
-    GetUrl("sitemap.xml"), 
+    sitemapUrl, 
     GetUrl("archive/"), 
     GetPostUrl(latestPostPath) 
     };
@@ -62,6 +63,7 @@ if (string.IsNullOrEmpty(config.CloudflareApiKey)
 
 await ClearCloudflareCache();
 await WarmupCache();
+await SubmitSitemapToGoogle();
 
 string GetUrl(string webPath) => config.BaseAddress + "/" + webPath;
 string GetTagUrl(string tag) => GetUrl("tag/" + tag + "/");
@@ -157,6 +159,12 @@ async Task VerifyUrl(string url) {
         Console.WriteLine("Failed to hit " + url);
         throw;
     }
+}
+
+async Task SubmitSitemapToGoogle() {
+    Console.WriteLine("Submitting sitemap to Google...");
+    var googleUrl = "https://www.google.com/ping?sitemap=" + sitemapUrl;
+    await VerifyUrl(googleUrl);
 }
 
 struct Preamble {

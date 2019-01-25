@@ -8,10 +8,11 @@
             "program": "dotnet",
             "args": [
               "exec", 
-              "/Users/sankra/.dotnet/tools/.store/dotnet-script/0.25.0/dotnet-script/0.25.0/tools/netcoreapp2.1/any/dotnet-script.dll", 
+              "/Users/sankra/.dotnet/tools/.store/dotnet-script/0.28.0/dotnet-script/0.28.0/tools/netcoreapp2.1/any/dotnet-script.dll", 
               "${file}",
               "--",
-              "../sankra.github.io/"
+              "../sankra.github.io/",
+              "dry_run"
             ],
             "cwd": "${workspaceRoot}",
             "stopAtEntry": true

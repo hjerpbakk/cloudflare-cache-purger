@@ -9,6 +9,8 @@ This script purges relevant pages from the cache on Cloudflare when adding a new
 - . /sitemap.xml
 - ./archive
 
+`sitemap.xml` is also submitted to Google so that the new content is crawled quicker.
+
 ## Running locally
 
 ```bash
