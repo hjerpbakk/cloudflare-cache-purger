@@ -1,4 +1,4 @@
-# cloudflare-cache-purger
+# Cloudflare Cache Purger
 
 ## What it does
 
