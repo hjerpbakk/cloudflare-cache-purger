@@ -53,6 +53,12 @@ If the script cannot find `config.json`, the generated paths will only be writte
     <img src="dry-run.png" width="682" alt="Example from a local dry run" />
 </p>
 
+A dry run can also be forced by using a second argument:
+
+```bash
+$ dotnet script main.csx -- path_to_jekyll_repo dry_run
+```
+
 ## Clear Cloudflare cache
 
 To use this with Cloudflare, clone the repo, create `config.json` from `config.default.json` and input your configuration values.

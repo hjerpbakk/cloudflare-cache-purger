@@ -1,15 +1,20 @@
-#! "netcoreapp2.1"
-#r "nuget: YamlDotNet.NetCore, 1.0.0"
-#r "nuget: Newtonsoft.Json, 11.0.2"
+#! "netcoreapp2.2"
+#r "nuget: YamlDotNet, 5.3.0"
+#r "nuget: Newtonsoft.Json, 12.0.1"
 
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using Newtonsoft.Json;
 using System.Net.Http;
 
-if (Args.Count != 1) {
+if (Args.Count < 1 || Args.Count > 2) {
     Console.WriteLine("Please provide the location of a Jekyll repository as an argument. Example: dotnet script main.csx -- path");
     return;
+}
+
+var dryRun = Args.Count == 2;
+if (dryRun) {
+    Console.WriteLine("Starting dry run");
 }
 
 Console.WriteLine("Finding cached URLs...");
@@ -43,6 +48,10 @@ urls.AddRange(preamble.tags.Select(t => GetTagUrl(t)));
 
 Console.WriteLine("Found the following URLs:");
 Console.WriteLine(string.Join(Environment.NewLine, urls));
+
+if (dryRun) {
+    return;
+}
 
 if (string.IsNullOrEmpty(config.CloudflareApiKey) 
     || string.IsNullOrEmpty(config.CloudflareEmail)
