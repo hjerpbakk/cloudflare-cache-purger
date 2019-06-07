@@ -42,7 +42,7 @@ var urls = new List<string>() {
     config.BaseAddress, 
     GetUrl("feed.xml"), 
     sitemapUrl, 
-    GetUrl("archive/"), 
+    GetUrl("archives/"), 
     GetPostUrl(latestPostPath) 
     };
 urls.AddRange(preamble.tags.Select(t => GetTagUrl(t)));
