@@ -1,11 +1,13 @@
-#! "netcoreapp2.2"
-#r "nuget: YamlDotNet, 5.3.0"
-#r "nuget: Newtonsoft.Json, 12.0.1"
+#!/usr/bin/env dotnet-script
+#r "nuget: YamlDotNet, 6.1.1"
+#r "nuget: Newtonsoft.Json, 12.0.2"
+#r "nuget: morelinq, 3.2.0"
 
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using Newtonsoft.Json;
 using System.Net.Http;
+using MoreLinq;
 
 if (Args.Count < 1 || Args.Count > 2) {
     Console.WriteLine("Please provide the location of a Jekyll repository as an argument. Example: dotnet script main.csx -- path");
@@ -19,33 +21,26 @@ if (dryRun) {
 
 Console.WriteLine("Finding cached URLs...");
 var postPath = Path.GetFullPath(Path.Combine(Args[0], "_posts"));
-var latestPostPath = Directory.EnumerateFileSystemEntries(postPath).OrderByDescending(p => p).FirstOrDefault();
-if (latestPostPath == null) {
-    Console.WriteLine("Could not find a single post at " + postPath);
-    return;
-}
-
-var postPreamble = GetPreambleFromPost(latestPostPath);
-if (postPreamble == null) {
-    Console.WriteLine(postPath + " did not contain a valid YML preamble.");
-    return;
-}
+var latestPostFrontMatter = Directory
+    .EnumerateFileSystemEntries(postPath, "*.md")
+    .Select(p => ParseFrontMatter(p))
+    .MaxBy(f => f.date > f.last_modified_at ? f.date : f.last_modified_at)
+    .First();
 
 const string ConfigFileName = "config.json";
 var config = File.Exists(ConfigFileName) 
     ? JsonConvert.DeserializeObject<Config>(File.ReadAllText(ConfigFileName))
-    : new Config() { BaseAddress = "https://hjerpbakk.com" };
+    : new Config("https://hjerpbakk.com");
 
-var preamble = ParsePreamble(postPreamble);
 var sitemapUrl = GetUrl("sitemap.xml");
 var urls = new List<string>() { 
     config.BaseAddress, 
     GetUrl("feed.xml"), 
     sitemapUrl, 
     GetUrl("archives/"), 
-    GetPostUrl(latestPostPath) 
+    GetPostUrl(latestPostFrontMatter.Path) 
     };
-urls.AddRange(preamble.tags.Select(t => GetTagUrl(t)));
+urls.AddRange(latestPostFrontMatter.tags.Select(t => GetTagUrl(t)));
 
 Console.WriteLine("Found the following URLs:");
 Console.WriteLine(string.Join(Environment.NewLine, urls));
@@ -90,26 +85,29 @@ string GetPostUrl(string latestPostPath) {
     return GetUrl(postUrl.ToString());
 }
 
-string GetPreambleFromPost(string latestPostPath) {
-    var fullText = File.ReadAllText(latestPostPath);
-    var indexOfFirstLineBreak = fullText.IndexOf('\n');
-    var indexOfPreambleEnd = fullText.IndexOf("---\n", indexOfFirstLineBreak, StringComparison.InvariantCulture);
-    if (indexOfPreambleEnd == -1) {
-        return null;
-    }
-
-    var preambleEnd = indexOfPreambleEnd + 3;
-    var preambleText = fullText.Substring(0, preambleEnd).Trim('-');
-    return preambleText;
-}
-
-Preamble ParsePreamble(string preambleText) {
+FrontMatter ParseFrontMatter(string postPath) {
+    var frontMatterText = GetFrontMatterFromPost();
     var deserializer = new DeserializerBuilder()
         .WithNamingConvention(new UnderscoredNamingConvention())
         .IgnoreUnmatchedProperties()
         .Build();
 
-    return deserializer.Deserialize<Preamble>(preambleText);
+    var frontMatter = deserializer.Deserialize<FrontMatter>(frontMatterText);
+    frontMatter.Path = postPath;
+    return frontMatter;
+
+    string GetFrontMatterFromPost() {
+        var fullText = File.ReadAllText(postPath);
+        var indexOfFirstLineBreak = fullText.IndexOf('\n');
+        var indexOfFrontMatterEnd = fullText.IndexOf("---\n", indexOfFirstLineBreak, StringComparison.InvariantCulture);
+        if (indexOfFrontMatterEnd == -1) {
+            throw new ArgumentException($"Could not parse front matter for {postPath}", nameof(postPath));
+        }
+
+        var frontMatterEnd = indexOfFrontMatterEnd + 3;
+        var frontMatterText = fullText.Substring(0, frontMatterEnd).Trim('-');
+        return frontMatterText;
+    }
 }
 
 async Task ClearCloudflareCache() {
@@ -167,18 +165,36 @@ async Task SubmitSitemapToGoogle() {
     await VerifyUrl(googleUrl);
 }
 
-struct Preamble {
+struct FrontMatter {
+    public DateTime date { get; set; }
+    public DateTime? last_modified_at { get; set; }
     public List<string> tags { get; set; }
+    public string Path { get; set; }
 }
 
-struct Config {
-    public string BaseAddress { get; set; }
-    public string CloudflareApiKey { get; set; }
-    public string CloudflareEmail { get; set; }
-    public string CloudflareZoneId { get; set; }
+readonly struct Config {
+    public Config(string baseAddress) {
+        BaseAddress = baseAddress;
+        CloudflareApiKey = null;
+        CloudflareEmail = null;
+        CloudflareZoneId = null;
+    }
+
+    [JsonConstructor]
+    public Config(string baseAddress, string cloudflareApiKey, string cloudflareEmail, string cloudflareZoneId) {
+        BaseAddress = baseAddress;
+        CloudflareApiKey = cloudflareApiKey;
+        CloudflareEmail = cloudflareEmail;
+        CloudflareZoneId = cloudflareZoneId;
+    }
+
+    public string BaseAddress { get; }
+    public string CloudflareApiKey { get; }
+    public string CloudflareEmail { get; }
+    public string CloudflareZoneId { get; }
 }
 
-struct CloudflareContent {
+readonly struct CloudflareContent {
     public CloudflareContent(List<string> urls) {
         files = urls;
     }
