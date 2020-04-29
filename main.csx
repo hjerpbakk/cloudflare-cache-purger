@@ -1,7 +1,7 @@
 #!/usr/bin/env dotnet-script
-#r "nuget: YamlDotNet, 6.1.1"
-#r "nuget: Newtonsoft.Json, 12.0.2"
-#r "nuget: morelinq, 3.2.0"
+#r "nuget: YamlDotNet, 8.1.1"
+#r "nuget: Newtonsoft.Json, 12.0.3"
+#r "nuget: morelinq, 3.3.2"
 
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -21,10 +21,11 @@ if (dryRun) {
 
 Console.WriteLine("Finding cached URLs...");
 var postPath = Path.GetFullPath(Path.Combine(Args[0], "_posts"));
+
 var latestPostFrontMatter = Directory
     .EnumerateFileSystemEntries(postPath, "*.md")
     .Select(p => ParseFrontMatter(p))
-    .MaxBy(f => f.date > f.last_modified_at ? f.date : f.last_modified_at)
+    .MaxBy(f => f.date)
     .First();
 
 const string ConfigFileName = "config.json";
@@ -88,7 +89,7 @@ string GetPostUrl(string latestPostPath) {
 FrontMatter ParseFrontMatter(string postPath) {
     var frontMatterText = GetFrontMatterFromPost();
     var deserializer = new DeserializerBuilder()
-        .WithNamingConvention(new UnderscoredNamingConvention())
+        .WithNamingConvention(UnderscoredNamingConvention.Instance)
         .IgnoreUnmatchedProperties()
         .Build();
 
@@ -167,7 +168,6 @@ async Task SubmitSitemapToGoogle() {
 
 struct FrontMatter {
     public DateTime date { get; set; }
-    public DateTime? last_modified_at { get; set; }
     public List<string> tags { get; set; }
     public string Path { get; set; }
 }
